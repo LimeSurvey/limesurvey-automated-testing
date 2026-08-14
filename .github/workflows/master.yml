@@ -3,6 +3,9 @@ name: Limesurvey Testing
 on:
   push:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     strategy:
@@ -16,13 +19,13 @@ jobs:
     name: Limesurvey ${{ matrix.testsuite }} tests
     steps:
       - name: Checkout current repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: limesurvey-automated-testing
           ref: 'master'
 
       - name: Checkout app
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: limesurvey
           repository: LimeSurvey/LimeSurvey
@@ -40,7 +43,6 @@ jobs:
       - name: Start the MySQL service
         run: |
           sudo systemctl start mysql.service
-          echo -e '[mysql]\nuser="root"\npassword="root"\nhost="localhost"' > "$HOME/.my.cnf"
 
       - name: Initilize and check all dependencies
         working-directory: limesurvey
@@ -63,7 +65,6 @@ jobs:
         working-directory: limesurvey
         run: |
           # Set up the Apache and PHP
-
           sudo cp -f ./tests/CI-pipeline/github-actions-apache /etc/apache2/sites-available/000-default.conf
           sudo sed -e "s?%CI_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/000-default.conf
           sudo service apache2 restart
@@ -89,23 +90,29 @@ jobs:
           # InnoDB needs large_file_prefix & Barracuda file format
           # https://discuss.gogs.io/t/solved-mysql-error-1064-while-running-first-install/1604
           # InnoDB variables ARE already set to desired values in Github runner (ubuntu-18.04)
-
           sudo systemctl start mysql
           sudo service mysql status
-          mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';" || true
-          mysql -e "Show  variables like '%large%';"
-          mysql -e "Show  variables like '%innodb_file%';"
-          mysql -e "Show  variables like '%innodb_default%';"
-          mysql -e "CREATE DATABASE limesurvey;"
+          mysql -uroot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';" 2>/dev/null || \
+          mysql -uroot -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';" || true
+          mysql -uroot -proot -e "Show  variables like '%large%';"
+          mysql -uroot -proot -e "Show  variables like '%innodb_file%';"
+          mysql -uroot -proot -e "Show  variables like '%innodb_default%';"
+          mysql -uroot -proot -e "CREATE DATABASE limesurvey;"
 
       - name: Load custom console and start the Application
         working-directory: limesurvey
         run: |
           cp application/config/config-sample-mysql.php application/config/config.php
-          php application/commands/console.php install admin password Administrator your-email@example.net verbose
-
-          # cat application/config/config.php
-          sed -i '70s/.*/        "RPCInterface" => "json",/' application/config/config.php
+          php application/commands/console.php install admin password TravisLS no@email.com verbose
+          # Do NOT set debug=2 here.
+          # InstallationControllerTest rewrites config.php with debug=0 and PHPUnit's YII_DEBUG constant (set at bootstrap) is immutable.
+          # This causes PHPUnit to use CDummyCache while Apache uses CFileCache, so cache->flush()
+          # becomes a no-op and Apache serves stale schema entries that breaks subsequent functional tests.
+          # sed -i '60s/.*/        "debug"=>2,/' application/config/config.php
+          #
+          # disable new editor for functional tests CI
+          sed -i '61i\        "RPCInterface"=>"json",/' application/config/config.php
+          cat application/config/config.php
 
       - name: Test the server
         run: |
@@ -113,7 +120,7 @@ jobs:
           wget -O - localhost
           #sudo tail -n 500 /var/log/apache2/error.log || true
           #sudo tail -n 500 /var/log/nginx/error.log || true
-          #sudo tail -n 500 /var/log/php7.4-fpm.log || true
+          #sudo tail -n 500 /var/log/php8.1-fpm.log || true
           #sudo tail -n 500 /var/log/php8.3-fpm.log || true
           # NOTE: php --version might not be the same as setup in apache. Use fwrite(STDERR, phpversion()); in index.php to be sure.
           #which php
