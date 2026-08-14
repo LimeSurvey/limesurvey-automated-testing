@@ -43,6 +43,7 @@ jobs:
       - name: Start the MySQL service
         run: |
           sudo systemctl start mysql.service
+          echo -e '[mysql]\nuser="root"\npassword="root"\nhost="localhost"' > "$HOME/.my.cnf"
 
       - name: Initilize and check all dependencies
         working-directory: limesurvey
