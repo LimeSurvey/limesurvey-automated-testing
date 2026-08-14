@@ -111,7 +111,7 @@ jobs:
           # sed -i '60s/.*/        "debug"=>2,/' application/config/config.php
           #
           # disable new editor for functional tests CI
-          sed -i '61i\        "RPCInterface"=>"json",/' application/config/config.php
+          sed -i '67i\        "RPCInterface" => "json",' application/config/config.php
           cat application/config/config.php
 
       - name: Test the server
