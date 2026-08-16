@@ -7,7 +7,7 @@
 
 DB_NAME=${1:-ls-ce}
 OUTPUT_FILE=${2:-ls-ce.sql}
-PATTERN="^(lime_survey_[0-9]|lime_tokens_[0-9]|lime_old_survey_[0-9_]|lime_old_tokens_[0-9_])"
+PATTERN="^(lime_responses_[0-9]|lime_tokens_[0-9]|lime_old_responses_[0-9_]|lime_old_tokens_[0-9_]|lime_old_questions_[0-9_])"
 
 echo "Exporting data from database '$DB_NAME'..." >&2
 
@@ -20,7 +20,7 @@ if [ -z "$ALL_TABLES" ]; then
 fi
 
 # Get tables matching the pattern (for CREATE statements)
-PATTERN_TABLES=$(echo "$ALL_TABLES" | grep -oE "(lime_survey_[0-9]+|lime_tokens_[0-9]+|lime_old_survey_[0-9_]+|lime_old_tokens_[0-9_]+)" | tr '\n' ' ')
+PATTERN_TABLES=$(echo "$ALL_TABLES" | grep -oE "(lime_responses_[0-9]+|lime_tokens_[0-9]+|lime_old_responses_[0-9_]+|lime_old_tokens_[0-9_]+|lime_old_questions_[0-9_]+)" | tr '\n' ' ')
 
 echo "Pattern tables (with CREATE): $(echo $PATTERN_TABLES | wc -w)" >&2
 echo "All data tables: $(echo $ALL_TABLES | wc -w)" >&2

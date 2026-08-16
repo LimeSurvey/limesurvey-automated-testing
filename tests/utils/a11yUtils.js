@@ -14,6 +14,7 @@ async function analyzeAccessibilityAndExportCSV(page, outputDir) {
   // A common, pragmatic baseline is wcag2a plus wcag2aa plus wcag21aa, which covers Level A and AA across WCAG 2.0 and 2.1.
   results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+    //.disableRules(['color-contrast'])
     .analyze();
   for (const violation of results.violations) {
     if (severity.includes(violation.impact)) {
