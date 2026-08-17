@@ -18,12 +18,16 @@ const LOGIN_URL    = `${BASE}/admin/authentication/sa/login`;
 const LOGOUT_URL   = `${BASE}/admin/authentication/sa/logout`;
 const FORGOT_URL   = `${BASE}/admin/authentication/sa/forgotpassword`;
 
+// ── Account ─────────────────────────────────────────────────────────────────
+const ACCOUNT_URL = `${BASE}/admin/user/sa/personalsettings`;
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
-const DASHBOARD_URL = `${BASE}/dashboard/view?viewtype=box-widget`;
+const DASHBOARD_URL = `${BASE}/dashboard/view`;
 
 // ── Survey administration ─────────────────────────────────────────────────────
 const NEW_SURVEY_URL  = `${BASE}/surveyAdministration/newSurvey`;
-const SURVEY_LIST_URL = `${BASE}/dashboard/view?viewtype=list-widget`;
+const SURVEY_LIST_URL = `${BASE}/surveyAdministration/listsurveys`;
+const SURVEY_GROUP_CREATE = `${BASE}/admin/surveysgroups/sa/create`;
 
 // ── Global settings ───────────────────────────────────────────────────────────
 const GLOBAL_SETTINGS_URL = `${BASE}/admin/globalsettings`;
@@ -65,6 +69,8 @@ module.exports = {
   BASE_URL: BASE,
   RC_URL,
   API_URL,
+  ACCOUNT_URL,
+  SURVEY_GROUP_CREATE,
   LOGIN_URL,
   LOGOUT_URL,
   FORGOT_URL,
