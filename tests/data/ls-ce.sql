@@ -80,7 +80,7 @@ CREATE TABLE `lime_tokens_952972` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-16 12:44:41
+-- Dump completed on 2026-08-17 16:00:24
 -- MySQL dump 10.13  Distrib 5.7.39, for Linux (x86_64)
 --
 -- Host: localhost    Database: ls-ce
@@ -375,7 +375,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `lime_plugin_settings` WRITE;
 /*!40000 ALTER TABLE `lime_plugin_settings` DISABLE KEYS */;
-INSERT INTO `lime_plugin_settings` VALUES (1,1,NULL,NULL,'next_extension_update_check','\"2026-08-17 12:14:24\"');
+INSERT INTO `lime_plugin_settings` VALUES (1,1,NULL,NULL,'next_extension_update_check','\"2026-08-18 14:33:26\"');
 /*!40000 ALTER TABLE `lime_plugin_settings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -481,7 +481,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `lime_sessions` WRITE;
 /*!40000 ALTER TABLE `lime_sessions` DISABLE KEYS */;
-INSERT INTO `lime_sessions` VALUES ('0ZEWW2USWkD03Q7NoDiYbAxAk34iU1Tk',1787331081,_binary 'admin'),('velcHl842atSaqmXztA1uZRd_Mv6eP6D',1787487996,_binary 'admin'),('jS6BC8YBiLUv6KUs99x9faOzqS9rAlUi',1787488957,_binary 'admin');
+INSERT INTO `lime_sessions` VALUES ('0ZEWW2USWkD03Q7NoDiYbAxAk34iU1Tk',1787331081,_binary 'admin'),('velcHl842atSaqmXztA1uZRd_Mv6eP6D',1787487996,_binary 'admin'),('jS6BC8YBiLUv6KUs99x9faOzqS9rAlUi',1787488957,_binary 'admin'),('8I_Yb81rD~873Yq_SFdaOP2fl8~ll9gh',1787489747,_binary 'admin'),('Il0COJpmH1VmO5G~daM0kgr_amp4jidU',1787564064,_binary 'admin'),('eidAVXsaEJSCCGRmLlECfWGnBfEKMdYh',1787564508,_binary 'admin'),('XnsI3DA8ofB6YsahFJJPhernhQF4huup',1787580613,_binary 'admin'),('FfAtms_2fnLAmimsX5qgz0CcZK5zFKC~',1787565659,_binary 'admin'),('goaqrn6zywAIj2o~wvKDXuPGYBOKFRjH',1787581709,_binary 'admin');
 /*!40000 ALTER TABLE `lime_sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -491,7 +491,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `lime_settings_user` WRITE;
 /*!40000 ALTER TABLE `lime_settings_user` DISABLE KEYS */;
-INSERT INTO `lime_settings_user` VALUES (1,1,NULL,NULL,'welcome_page_widget','box-widget'),(2,2,NULL,NULL,'editorPreset','wysiwyg'),(3,2,NULL,NULL,'showScriptEdit','1'),(4,2,NULL,NULL,'noViewMode','0'),(5,2,NULL,NULL,'answeroptionprefix','AO'),(6,2,NULL,NULL,'subquestionprefix','SQ'),(7,2,NULL,NULL,'lock_organizer','0'),(8,2,NULL,NULL,'breadcrumbMode','default'),(9,1,NULL,NULL,'last_question','6');
+INSERT INTO `lime_settings_user` VALUES (1,1,NULL,NULL,'welcome_page_widget','list-widget'),(2,2,NULL,NULL,'editorPreset','wysiwyg'),(3,2,NULL,NULL,'showScriptEdit','1'),(4,2,NULL,NULL,'noViewMode','0'),(5,2,NULL,NULL,'answeroptionprefix','AO'),(6,2,NULL,NULL,'subquestionprefix','SQ'),(7,2,NULL,NULL,'lock_organizer','0'),(8,2,NULL,NULL,'breadcrumbMode','default'),(9,1,NULL,NULL,'last_question','6'),(10,1,NULL,NULL,'editorEnabled','0'),(11,1,NULL,NULL,'last_survey','282267'),(12,1,NULL,NULL,'quickaction_state','1');
 /*!40000 ALTER TABLE `lime_settings_user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -548,7 +548,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `lime_surveys` WRITE;
 /*!40000 ALTER TABLE `lime_surveys` DISABLE KEYS */;
-INSERT INTO `lime_surveys` VALUES (952972,1,1,'inherit','Y',NULL,NULL,'inherit','N','I','N','inherit','en','','Y','I','I','I',0,'I','I','I','N','N','N','2026-08-14 16:51:19',0,'I','I','I','I','I','I','I','I','I','E','N','inherit',NULL,'inherit','inherit',-1,'I','I','I','I',NULL,'N',NULL,NULL,NULL,NULL,NULL,'N','I',-1,-1,'I',NULL,NULL,'','O','2026-08-16 12:42:46'),(282267,1,1,'Amministratore OpenSurvey.it','N',NULL,NULL,'admin.limesurvey@opensurvey.it','Y','G','N','vanilla','en','fr de-informal it ru','Y','N','N','N',0,'N','Y','Y','N','N','N','2026-08-16 12:25:37',0,'I','I','Y','N','Y','Y','Y','N','N','N','N','admin.limesurvey@opensurvey.it','','','',15,'Y','B','Y','B',0,'N','','','','','','Y','Y',2,0,'N','0','','{\"enabled\":\"N\",\"columns\":{\"firstname\":\"N\",\"lastname\":\"N\",\"email\":\"N\"}}','O','2026-08-16 12:25:37');
+INSERT INTO `lime_surveys` VALUES (952972,1,1,'inherit','Y',NULL,NULL,'inherit','N','I','N','inherit','en','','Y','I','I','I',0,'I','I','I','N','N','N','2026-08-14 16:51:19',0,'I','I','I','I','I','I','I','I','I','E','N','inherit',NULL,'inherit','inherit',-1,'I','I','I','I',NULL,'N',NULL,NULL,NULL,NULL,NULL,'Y','I',-1,-1,'I',NULL,NULL,'','O','2026-08-17 09:52:27'),(282267,1,1,'Amministratore OpenSurvey.it','N',NULL,NULL,'admin.limesurvey@opensurvey.it','Y','G','N','vanilla','en','fr de-informal it ru','Y','N','N','N',0,'N','Y','Y','N','N','N','2026-08-16 12:25:37',0,'I','I','Y','N','Y','Y','Y','N','N','N','N','admin.limesurvey@opensurvey.it','','','',15,'Y','B','Y','B',0,'N','','','','','','Y','Y',2,0,'N','0','','{\"enabled\":\"N\",\"columns\":{\"firstname\":\"N\",\"lastname\":\"N\",\"email\":\"N\"}}','O','2026-08-16 12:25:37');
 /*!40000 ALTER TABLE `lime_surveys` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -558,7 +558,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `lime_surveys_groups` WRITE;
 /*!40000 ALTER TABLE `lime_surveys_groups` DISABLE KEYS */;
-INSERT INTO `lime_surveys_groups` VALUES (1,'default','Default',NULL,'Default survey group',0,1,NULL,NULL,'2026-08-14 16:50:30','2026-08-14 16:50:30',1);
+INSERT INTO `lime_surveys_groups` VALUES (1,'default','Default',NULL,'Default survey group',0,1,NULL,NULL,'2026-08-14 16:50:30','2026-08-14 16:50:30',1),(2,'SGA','Group A','default','',2,1,NULL,1,'2026-08-17 14:56:35',NULL,1);
 /*!40000 ALTER TABLE `lime_surveys_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -568,7 +568,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `lime_surveys_groupsettings` WRITE;
 /*!40000 ALTER TABLE `lime_surveys_groupsettings` DISABLE KEYS */;
-INSERT INTO `lime_surveys_groupsettings` VALUES (0,1,'Administrator','admin@test.ing','N','G','N','fruity_twentythree','Y','N','N','Y',0,'N','N','N','N','N','N',0,'N','N','N','N','N','Y','Y','N','N','N',NULL,NULL,NULL,NULL,15,'Y','B','Y','X','Y','Y',0,0,'N'),(1,-1,'inherit','inherit','I','I','I','inherit','I','I','I','I',0,'I','I','I','I','I','I',0,'I','I','I','I','I','I','I','I','I','E','inherit',NULL,'inherit','inherit',-1,'I','I','I','I','I','I',-1,-1,'I');
+INSERT INTO `lime_surveys_groupsettings` VALUES (0,1,'Administrator','admin@test.ing','N','G','N','fruity_twentythree','Y','N','N','Y',0,'N','N','N','N','N','N',0,'N','N','N','N','N','Y','Y','N','N','N',NULL,NULL,NULL,NULL,15,'Y','B','Y','X','Y','Y',0,0,'N'),(1,-1,'inherit','inherit','I','I','I','inherit','I','I','I','I',0,'I','I','I','I','I','I',0,'I','I','I','I','I','I','I','I','I','E','inherit',NULL,'inherit','inherit',-1,'I','I','I','I','I','I',-1,-1,'I'),(2,-1,'inherit','inherit','I','I','I','inherit','I','I','I','I',0,'I','I','I','I','I','I',0,'I','I','I','I','I','I','I','I','I','E','inherit',NULL,'inherit','inherit',-1,'I','I','I','I','I','I',-1,-1,'I');
 /*!40000 ALTER TABLE `lime_surveys_groupsettings` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -673,7 +673,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `lime_users` WRITE;
 /*!40000 ALTER TABLE `lime_users` DISABLE KEYS */;
-INSERT INTO `lime_users` VALUES (1,'admin','$2y$10$P12IlN9MGbrof//j9UxAZeSYOGIOU48YaxK8ZAp03vT14/ncbKB7q','Administrator',0,'en','admin@test.ing','default','default','default',NULL,1,'2026-08-16 12:14:15','2026-08-14 16:50:45','2026-08-16 12:14:15',NULL,NULL,NULL,NULL,1),(2,'lower_admin1','$2y$10$n/GQ7wr2rRpIjd1REm5wyeB.2HybP6e9iGt615uTGVW2mPDkw7chu','Lower Admin',1,'auto','lower.admin1@test.ing','default','default','default',NULL,1,NULL,'2026-08-16 12:16:26','2026-08-16 12:16:37',NULL,NULL,NULL,NULL,1);
+INSERT INTO `lime_users` VALUES (1,'admin','$2y$10$P12IlN9MGbrof//j9UxAZeSYOGIOU48YaxK8ZAp03vT14/ncbKB7q','Administrator',0,'en','admin@test.ing','default','default','default',NULL,1,'2026-08-17 15:56:28','2026-08-14 16:50:45','2026-08-17 15:56:28',NULL,NULL,NULL,NULL,1),(2,'lower_admin1','$2y$10$n/GQ7wr2rRpIjd1REm5wyeB.2HybP6e9iGt615uTGVW2mPDkw7chu','Lower Admin',1,'auto','lower.admin1@test.ing','default','default','default',NULL,1,NULL,'2026-08-16 12:16:26','2026-08-16 12:16:37',NULL,NULL,NULL,NULL,1);
 /*!40000 ALTER TABLE `lime_users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -686,4 +686,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-16 12:44:42
+-- Dump completed on 2026-08-17 16:00:25
