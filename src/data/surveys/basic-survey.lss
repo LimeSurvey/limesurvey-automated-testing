@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document><LimeSurveyDocType>Survey</LimeSurveyDocType><DBVersion>717</DBVersion><languages><language>en</language></languages>
+<answers><fields><fieldname>aid</fieldname><fieldname>qid</fieldname><fieldname>code</fieldname><fieldname>sortorder</fieldname><fieldname>assessment_value</fieldname><fieldname>scale_id</fieldname></fields><rows>
+   <row><aid>1001</aid><qid>101</qid><code>A1</code><sortorder>1</sortorder><assessment_value>0</assessment_value><scale_id>0</scale_id></row>
+   <row><aid>1002</aid><qid>101</qid><code>A2</code><sortorder>2</sortorder><assessment_value>0</assessment_value><scale_id>0</scale_id></row>
+   <row><aid>1003</aid><qid>101</qid><code>A3</code><sortorder>3</sortorder><assessment_value>0</assessment_value><scale_id>0</scale_id></row>
+</rows></answers>
+<answer_l10ns><fields><fieldname>id</fieldname><fieldname>aid</fieldname><fieldname>answer</fieldname><fieldname>language</fieldname></fields><rows>
+   <row><id>1</id><aid>1001</aid><answer>Very satisfied</answer><language>en</language></row>
+   <row><id>2</id><aid>1002</aid><answer>Satisfied</answer><language>en</language></row>
+   <row><id>3</id><aid>1003</aid><answer>Not satisfied</answer><language>en</language></row>
+</rows></answer_l10ns>
+<groups><fields><fieldname>gid</fieldname><fieldname>sid</fieldname><fieldname>group_order</fieldname><fieldname>randomization_group</fieldname><fieldname>grelevance</fieldname></fields><rows>
+<row><gid>10</gid><sid>482915</sid><group_order>1</group_order><randomization_group/><grelevance>1</grelevance></row>
+<row><gid>11</gid><sid>482915</sid><group_order>2</group_order><randomization_group/><grelevance>1</grelevance></row>
+</rows></groups>
+<group_l10ns><fields><fieldname>id</fieldname><fieldname>gid</fieldname><fieldname>group_name</fieldname><fieldname>description</fieldname><fieldname>language</fieldname></fields><rows>
+<row><id>1</id><gid>10</gid><group_name>About you</group_name><description/><language>en</language></row>
+<row><id>2</id><gid>11</gid><group_name>Feedback</group_name><description/><language>en</language></row>
+</rows></group_l10ns>
+<questions><fields><fieldname>qid</fieldname><fieldname>parent_qid</fieldname><fieldname>sid</fieldname><fieldname>gid</fieldname><fieldname>type</fieldname><fieldname>title</fieldname><fieldname>other</fieldname><fieldname>mandatory</fieldname><fieldname>question_order</fieldname><fieldname>scale_id</fieldname><fieldname>same_default</fieldname><fieldname>relevance</fieldname><fieldname>encrypted</fieldname><fieldname>question_theme_name</fieldname><fieldname>same_script</fieldname></fields><rows>
+   <row><qid>100</qid><parent_qid>0</parent_qid><sid>482915</sid><gid>10</gid><type>S</type><title>name</title><other>N</other><mandatory>Y</mandatory><question_order>1</question_order><scale_id>0</scale_id><same_default>0</same_default><relevance>1</relevance><encrypted>N</encrypted><question_theme_name>shortfreetext</question_theme_name><same_script>0</same_script></row>
+   <row><qid>101</qid><parent_qid>0</parent_qid><sid>482915</sid><gid>10</gid><type>L</type><title>satisfaction</title><other>N</other><mandatory>N</mandatory><question_order>2</question_order><scale_id>0</scale_id><same_default>0</same_default><relevance>1</relevance><encrypted>N</encrypted><question_theme_name>listradio</question_theme_name><same_script>0</same_script></row>
+   <row><qid>102</qid><parent_qid>0</parent_qid><sid>482915</sid><gid>11</gid><type>Y</type><title>recommend</title><other>N</other><mandatory>N</mandatory><question_order>1</question_order><scale_id>0</scale_id><same_default>0</same_default><relevance>1</relevance><encrypted>N</encrypted><question_theme_name>yesno</question_theme_name><same_script>0</same_script></row>
+   <row><qid>103</qid><parent_qid>0</parent_qid><sid>482915</sid><gid>11</gid><type>T</type><title>comments</title><other>N</other><mandatory>N</mandatory><question_order>2</question_order><scale_id>0</scale_id><same_default>0</same_default><relevance>1</relevance><encrypted>N</encrypted><question_theme_name>longfreetext</question_theme_name><same_script>0</same_script></row>
+</rows></questions>
+<question_l10ns><fields><fieldname>id</fieldname><fieldname>qid</fieldname><fieldname>question</fieldname><fieldname>help</fieldname><fieldname>language</fieldname><fieldname>script</fieldname></fields><rows>
+   <row><id>1</id><qid>100</qid><question>What is your name?</question><help/><language>en</language><script/></row>
+   <row><id>2</id><qid>101</qid><question>How satisfied are you with LimeSurvey?</question><help/><language>en</language><script/></row>
+   <row><id>3</id><qid>102</qid><question>Would you recommend LimeSurvey to a friend?</question><help/><language>en</language><script/></row>
+   <row><id>4</id><qid>103</qid><question>Any other comments?</question><help/><language>en</language><script/></row>
+</rows></question_l10ns>
+<surveys><fields><fieldname>sid</fieldname><fieldname>admin</fieldname><fieldname>adminemail</fieldname><fieldname>anonymized</fieldname><fieldname>format</fieldname><fieldname>language</fieldname><fieldname>additional_languages</fieldname><fieldname>gsid</fieldname><fieldname>template</fieldname><fieldname>showwelcome</fieldname><fieldname>allowprev</fieldname></fields><rows>
+<row><sid>482915</sid><admin>inherit</admin><adminemail>inherit</adminemail><anonymized>N</anonymized><format>G</format><language>en</language><additional_languages/><gsid>1</gsid><template>inherit</template><showwelcome>Y</showwelcome><allowprev>Y</allowprev></row>
+</rows></surveys>
+<surveys_languagesettings><fields><fieldname>surveyls_survey_id</fieldname><fieldname>surveyls_language</fieldname><fieldname>surveyls_title</fieldname><fieldname>surveyls_description</fieldname><fieldname>surveyls_welcometext</fieldname><fieldname>surveyls_endtext</fieldname></fields><rows>
+<row><surveyls_survey_id>482915</surveyls_survey_id><surveyls_language>en</surveyls_language><surveyls_title>E2E basic survey</surveyls_title><surveyls_description>Two question groups used by the automated tests.</surveyls_description><surveyls_welcometext>Welcome to the automated test survey.</surveyls_welcometext><surveyls_endtext>Thank you for completing the automated test survey.</surveyls_endtext></row>
+</rows></surveys_languagesettings>
+</document>

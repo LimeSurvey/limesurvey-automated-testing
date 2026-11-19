@@ -1,0 +1,9 @@
+node_modules/
+package-lock.json
+playwright-report/
+blob-report/
+test-results/
+playwright/.auth/
+# Byte-exact fixtures and DB snapshots
+src/data/**/*.lss
+scripts/db/

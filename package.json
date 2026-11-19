@@ -1,19 +1,39 @@
 {
   "name": "limesurvey-automated-testing",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {},
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.9",
-    "dotenv": "^17.4.2"
+  "private": true,
+  "description": "Playwright end-to-end, API and accessibility tests for LimeSurvey",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
   },
-  "dependencies": {
-    "@axe-core/playwright": "^4.10.1",
-    "path": "^0.12.7"
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test --project=smoke --headed --workers=1",
+    "test:admin": "playwright test --project=admin",
+    "test:respondent": "playwright test --project=respondent",
+    "test:api": "playwright test --project=api",
+    "test:a11y": "playwright test --project=accessibility",
+    "test:regression": "playwright test --project=smoke --project=admin --project=respondent --project=api",
+    "test:headed": "playwright test --headed --workers=1",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:list": "playwright test --list",
+    "report": "playwright show-report",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run format:check"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "eslint": "10.13.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-playwright": "2.12.1",
+    "globals": "17.13.0",
+    "prettier": "3.9.10"
   }
 }
