@@ -34,14 +34,19 @@ classic pages.
 
 ### Environment variables
 
-| Variable            | Default                 | Description                                                       |
-| ------------------- | ----------------------- | ----------------------------------------------------------------- |
-| `BASE_URL`          | `http://localhost:8080` | LimeSurvey entry URL. Without URL rewriting include `/index.php`. |
-| `LS_ADMIN_USER`     | —                       | Super-administrator user name                                     |
-| `LS_ADMIN_PASSWORD` | —                       | Super-administrator password                                      |
-| `CI`                | —                       | Enables retries, `forbidOnly`, 2 workers and CI reporters         |
+| Variable             | Default                 | Description                                                       |
+| -------------------- | ----------------------- | ----------------------------------------------------------------- |
+| `BASE_URL`           | `http://localhost:8080` | LimeSurvey entry URL. Without URL rewriting include `/index.php`. |
+| `LS_ADMIN_USER`      | —                       | Super-administrator user name                                     |
+| `LS_ADMIN_PASSWORD`  | —                       | Super-administrator password                                      |
+| `CI`                 | —                       | Enables retries, `forbidOnly`, 2 workers and CI reporters         |
+| `A11Y_WCAG_TAGS`     | WCAG 2.0/2.1/2.2 A + AA | Comma-separated axe tags to scan for; unknown tags fail the run   |
+| `A11Y_DISABLE_RULES` | none                    | Comma-separated axe rule ids skipped in every scan                |
 
 Values come from the shell first, then from `.env` (gitignored). Never commit credentials.
+The accessibility defaults live in [src/utils/accessibility.js](src/utils/accessibility.js); the variables
+are for local exploration. Leave them unset in CI so results stay comparable between runs, and only
+disable a rule with a link to its tracked issue.
 
 ## Running tests
 
@@ -162,6 +167,20 @@ Before committing run `npm run check` (ESLint + Prettier). ESLint enforces the P
    Apache/PHP/MySQL, enables the JSON-RPC API and the loopback allowlists, then runs
    `npx playwright test --project=<project>`. The HTML report, traces and JUnit XML are uploaded as artifacts.
 
-To use the suite as a deployment gate, call the workflow from the application pipeline (`workflow_call`), or
-run it against any deployed environment by exporting `BASE_URL`, `LS_ADMIN_USER` and `LS_ADMIN_PASSWORD`
-(from CI secrets) and running `npm run test:smoke` followed by `npm run test:regression`.
+Pull-request runs cancel their superseded run; push, dispatch and called runs are never cancelled.
+
+To use the suite as a deployment gate, call it from the application pipeline and pass the commit being
+deployed (otherwise LimeSurvey `master` is tested):
+
+```yaml
+jobs:
+  e2e:
+    uses: LimeSurvey/limesurvey-automated-testing/.github/workflows/master.yml@master
+    with:
+      limesurvey_ref: ${{ github.sha }}
+```
+
+The workflow checks out its own code via `job.workflow_repository`/`job.workflow_sha` (in a called workflow
+the `github` context belongs to the caller). Alternatively, run the suite against any deployed environment by
+exporting `BASE_URL`, `LS_ADMIN_USER` and `LS_ADMIN_PASSWORD` (from CI secrets) and running
+`npm run test:smoke` followed by `npm run test:regression`.

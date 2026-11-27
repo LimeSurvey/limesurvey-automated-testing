@@ -10,6 +10,9 @@ on:
         default: master
         type: string
   # Lets the application pipeline call this suite as its testing/deployment-gate step.
+  # Callers should pass the commit they deploy: `with: { limesurvey_ref: ${{ github.sha }} }`.
+  # Note: in a called workflow the `github` context (repository, sha, ref, workflow, event_name)
+  # belongs to the CALLER; this file must not rely on it to find its own code.
   workflow_call:
     inputs:
       limesurvey_ref:
@@ -21,8 +24,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Suite-specific prefix: a group built only from `github.workflow`/`github.ref` would resolve
+  # to the caller's own group under workflow_call and deadlock or cancel the gate.
+  # Pull requests share one group per PR so a new push cancels the superseded run; every other
+  # run (push, dispatch, call) gets its own group, so no commit's result is ever dropped.
+  group: limesurvey-playwright-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}-${{ inputs.limesurvey_ref || 'master' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   NODE_VERSION: '22'
@@ -32,7 +39,12 @@ jobs:
     name: Lint and format check
     runs-on: ubuntu-24.04
     steps:
+      # Always this workflow's own repository and commit. Without `repository`/`ref`, a
+      # workflow_call run would check out the caller's repository (see the trigger note).
       - uses: actions/checkout@v5
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -56,6 +68,9 @@ jobs:
       - name: Checkout tests
         uses: actions/checkout@v5
         with:
+          # This workflow's own repository and commit, also under workflow_call (see the lint job).
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
           path: limesurvey-automated-testing
 
       - name: Checkout LimeSurvey
@@ -111,15 +126,20 @@ jobs:
           #  - RPCInterface=json enables the RemoteControl API that the fixtures seed data through.
           #  - The loopback allowlists stop the invalid-login/invalid-token tests from locking
           #    out the runner's IP (3 failed attempts = 10 min lockout by default).
-          sed -i "/'config' => array(/a\\
-                  'RPCInterface' => 'json',\\
-                  'loginIpWhitelist' => '127.0.0.1,::1',\\
-                  'tokenIpWhitelist' => '127.0.0.1,::1'," application/config/config.php
+          # The pattern tolerates any spacing and both array syntaxes: the MySQL sample writes
+          # `'config' => array(`, the PostgreSQL sample `'config'=>array(`, newer code may use `[`.
+          sed -i "s/'config'[[:space:]]*=>[[:space:]]*\(array(\|\[\)/&\n        'RPCInterface' => 'json',\n        'loginIpWhitelist' => '127.0.0.1,::1',\n        'tokenIpWhitelist' => '127.0.0.1,::1',/" application/config/config.php
           php -l application/config/config.php
+          # sed exits 0 even when nothing matched, so fail here rather than later in the fixtures.
           grep -q "'RPCInterface' => 'json'" application/config/config.php
 
-      - name: Check the server responds
-        run: curl --fail --silent --show-error --output /dev/null http://localhost/index.php/admin/authentication/sa/login
+      - name: Check the server and the RemoteControl API respond
+        run: |
+          curl --fail --silent --show-error --output /dev/null http://localhost/index.php/admin/authentication/sa/login
+          # End-to-end check of the settings above: a JSON session key means RPCInterface=json is active.
+          curl --fail --silent --show-error -X POST -H 'Content-Type: application/json' \
+            -d '{"method":"get_session_key","params":["admin","password"],"id":1}' \
+            http://localhost/index.php/admin/remotecontrol | grep -q '"result":"'
 
       - name: Set up Node.js
         uses: actions/setup-node@v4

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "playwright test",
-    "test:smoke": "playwright test --project=smoke --headed --workers=1",
+    "test:smoke": "playwright test --project=smoke",
     "test:admin": "playwright test --project=admin",
     "test:respondent": "playwright test --project=respondent",
     "test:api": "playwright test --project=api",
@@ -30,6 +30,7 @@
     "@axe-core/playwright": "4.14.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.1",
+    "axe-core": "4.14.0",
     "eslint": "10.13.0",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-playwright": "2.12.1",

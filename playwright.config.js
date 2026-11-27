@@ -19,7 +19,7 @@ const asAdmin = { storageState: ADMIN_STORAGE_STATE };
 
 export default defineConfig({
   testDir: './tests',
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: env.isCI,
   retries: env.isCI ? 2 : 0,
   // The app under test usually runs on the same CI runner, so keep CI parallelism modest.

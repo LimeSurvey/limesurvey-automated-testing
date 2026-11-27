@@ -34,10 +34,23 @@ function normalizeBaseUrl(url) {
   return url.endsWith('/') ? url : `${url}/`;
 }
 
+/** Comma-separated variable as a trimmed list; `undefined` when unset or empty (use the default). */
+function list(name) {
+  const items = (process.env[name] ?? '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  return items.length ? items : undefined;
+}
+
 export const env = {
   projectRoot,
   baseURL: normalizeBaseUrl(process.env.BASE_URL || 'http://localhost:8080'),
   isCI: Boolean(process.env.CI),
+  /** A11Y_WCAG_TAGS: axe tags to scan for (default in src/utils/accessibility.js). */
+  a11yWcagTags: list('A11Y_WCAG_TAGS'),
+  /** A11Y_DISABLE_RULES: axe rule ids skipped in every scan (default in src/utils/accessibility.js). */
+  a11yDisabledRules: list('A11Y_DISABLE_RULES'),
   get adminUser() {
     return required('LS_ADMIN_USER');
   },
