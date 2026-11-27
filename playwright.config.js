@@ -1,113 +1,80 @@
-// @ts-check
 import { defineConfig, devices } from '@playwright/test';
+import { ADMIN_STORAGE_STATE, env } from './src/config/env.js';
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-import dotenv from 'dotenv';
-import path from 'path';
-dotenv.config({ path: path.resolve(__dirname, '.env') });
-
-/**
+ * Projects
+ *   setup         logs in once and saves the admin session (storageState)
+ *   smoke         fast health checks; run first, e.g. as a deployment gate
+ *   admin         admin UI flows, reusing the saved admin session
+ *   respondent    survey-taking flows, as an anonymous respondent
+ *   api           RemoteControl / REST API checks, no browser
+ *   accessibility axe-core scans of admin screens
+ *
+ * Run one with `npx playwright test --project=<name>`, or filter by tag with `--grep @smoke`.
  * @see https://playwright.dev/docs/test-configuration
  */
+
+const chrome = devices['Desktop Chrome'];
+const asAdmin = { storageState: ADMIN_STORAGE_STATE };
+
 export default defineConfig({
   testDir: './tests',
-  /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  forbidOnly: env.isCI,
+  retries: env.isCI ? 2 : 0,
+  // The app under test usually runs on the same CI runner, so keep CI parallelism modest.
+  workers: env.isCI ? 2 : undefined,
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
+
+  reporter: env.isCI
+    ? [['list'], ['github'], ['html', { open: 'never' }], ['junit', { outputFile: 'test-results/junit.xml' }]]
+    : [['list'], ['html', { open: 'on-failure' }]],
+
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://ls-ce/index.php',
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    baseURL: env.baseURL,
+    locale: 'en-US',
     ignoreHTTPSErrors: true,
+    actionTimeout: 15_000,
+    navigationTimeout: 30_000,
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
   },
 
-  /* Configure projects for major browsers */
   projects: [
-    // Setup project
     {
       name: 'setup',
-      testDir: './tests/setup',
-      testMatch: /.*\.setup\.js/,
-      use: devices['Desktop Chrome'],
+      testMatch: /auth\.setup\.js$/,
+      use: { ...chrome },
     },
-
     {
-      name: 'e2e',
-      testDir: './tests/e2e',
-      use: {
-        ...devices['Desktop Chrome'],
-        // Use prepared auth state.
-        storageState: 'auth.json',
-      },
+      name: 'smoke',
+      testDir: './tests/smoke',
+      use: { ...chrome, ...asAdmin },
       dependencies: ['setup'],
     },
-
+    {
+      name: 'admin',
+      testDir: './tests/admin',
+      testIgnore: ['api/**', 'accessibility/**'],
+      use: { ...chrome, ...asAdmin },
+      dependencies: ['setup'],
+    },
+    {
+      name: 'respondent',
+      testDir: './tests/respondent',
+      use: { ...chrome },
+    },
     {
       name: 'api',
-      testDir: './tests/api',
-      use: {
-        ...devices['Desktop Chrome'],
-      },
+      testDir: './tests/admin/api',
     },
-
     {
       name: 'accessibility',
-      testDir: './tests/accessibility',
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: 'auth.json',
-      },
+      testDir: './tests/admin/accessibility',
+      use: { ...chrome, ...asAdmin },
       dependencies: ['setup'],
     },
-
-    // {
-    //   name: 'firefox',
-    //   use: { ...devices['Desktop Firefox'] },
-    // },
-
-    // {
-    //   name: 'webkit',
-    //   use: { ...devices['Desktop Safari'] },
-    // },
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: { ...devices['Pixel 5'] },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: { ...devices['iPhone 12'] },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    // },
   ],
-
-  /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   url: 'http://127.0.0.1:3000',
-  //   reuseExistingServer: !process.env.CI,
-  // },
 });
-

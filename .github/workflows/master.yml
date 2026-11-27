@@ -1,35 +1,84 @@
-name: Limesurvey Testing
+name: LimeSurvey Playwright tests
 
 on:
   push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      limesurvey_ref:
+        description: LimeSurvey branch, tag or SHA to test
+        default: master
+        type: string
+  # Lets the application pipeline call this suite as its testing/deployment-gate step.
+  # Callers should pass the commit they deploy: `with: { limesurvey_ref: ${{ github.sha }} }`.
+  # Note: in a called workflow the `github` context (repository, sha, ref, workflow, event_name)
+  # belongs to the CALLER; this file must not rely on it to find its own code.
+  workflow_call:
+    inputs:
+      limesurvey_ref:
+        description: LimeSurvey branch, tag or SHA to test
+        default: master
+        type: string
 
 permissions:
   contents: read
 
+concurrency:
+  # Suite-specific prefix: a group built only from `github.workflow`/`github.ref` would resolve
+  # to the caller's own group under workflow_call and deadlock or cancel the gate.
+  # Pull requests share one group per PR so a new push cancels the superseded run; every other
+  # run (push, dispatch, call) gets its own group, so no commit's result is ever dropped.
+  group: limesurvey-playwright-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}-${{ inputs.limesurvey_ref || 'master' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: '22'
+
 jobs:
+  lint:
+    name: Lint and format check
+    runs-on: ubuntu-24.04
+    steps:
+      # Always this workflow's own repository and commit. Without `repository`/`ref`, a
+      # workflow_call run would check out the caller's repository (see the trigger note).
+      - uses: actions/checkout@v5
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
   test:
+    name: ${{ matrix.project }} tests
+    needs: lint
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        testsuite: [ 'e2e', 'accessibility', 'api' ]
-    runs-on: ubuntu-22.04
+        project: [smoke, admin, respondent, api, accessibility]
     env:
       DBENGINE: INNODB
 
-    name: Limesurvey ${{ matrix.testsuite }} tests
     steps:
-      - name: Checkout current repo
+      - name: Checkout tests
         uses: actions/checkout@v5
         with:
+          # This workflow's own repository and commit, also under workflow_call (see the lint job).
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
           path: limesurvey-automated-testing
-          ref: 'master'
 
-      - name: Checkout app
+      - name: Checkout LimeSurvey
         uses: actions/checkout@v5
         with:
           path: limesurvey
           repository: LimeSurvey/LimeSurvey
-          ref: 'master'
+          ref: ${{ inputs.limesurvey_ref || 'master' }}
 
       - name: Install PHP
         run: |
@@ -40,130 +89,132 @@ jobs:
           sudo apt --fix-broken install php php8.3-ldap php8.3-gd php8.3-intl php8.3-zip php8.3-mysql php8.3-xml php8.3-curl php8.3-mbstring php8.3-sqlite3 libapache2-mod-php8.3 -y
           sudo update-alternatives --set php /usr/bin/php8.3
 
-      - name: Start the MySQL service
+      - name: Start MySQL
         run: |
           sudo systemctl start mysql.service
           echo -e '[mysql]\nuser="root"\npassword="root"\nhost="localhost"' > "$HOME/.my.cnf"
+          sudo service mysql status
+          mysql -uroot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';" 2>/dev/null || \
+          mysql -uroot -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';" || true
+          mysql -uroot -proot -e "CREATE DATABASE limesurvey;"
 
-      - name: Initilize and check all dependencies
+      - name: Install LimeSurvey dependencies
         working-directory: limesurvey
         run: |
-          # Before running composer install, check that the autoloader is up-to-date and all classes can be loaded.
           php tests/check_autoloader.php
-
-          # Test
-          echo $archive_url
-          php -r 'var_dump(PHP_INT_SIZE);'
-          # Install LimeSurvey.
-          php -m  # Spit out all loaded PHP modules
-          mysql --version
           touch enabletests
-          # NB: PHPUnit 6.5.* is installed with composer.
-          composer install -vvv
-          ./vendor/bin/phpunit --version
+          composer install --no-interaction --no-progress
 
-      - name: Set up Apache+PHP
+      - name: Set up Apache + PHP
         working-directory: limesurvey
         run: |
-          # Set up the Apache and PHP
           sudo cp -f ./tests/CI-pipeline/github-actions-apache /etc/apache2/sites-available/000-default.conf
           sudo sed -e "s?%CI_BUILD_DIR%?$(pwd)?g" --in-place /etc/apache2/sites-available/000-default.conf
           sudo service apache2 restart
 
-          # Give permision to access files for Apache
-          setfacl -dR -m u:www-data:rwX -m u:$(whoami):rwx ./tmp
-          setfacl -dR -m u:www-data:rwX -m u:$(whoami):rwx ./upload
-          setfacl -dR -m u:www-data:rwX -m u:$(whoami):rwx ./themes
-          setfacl -dR -m u:www-data:rwX -m u:$(whoami):rwx ./tests/tmp
-          setfacl -dR -m u:www-data:rwX -m u:$(whoami):rwx ./application/config
-
-          chmod -R 777 ./tmp
+          setfacl -dR -m u:www-data:rwX -m u:$(whoami):rwx ./tmp ./upload ./themes ./tests/tmp ./application/config
+          chmod -R 777 ./tmp ./upload ./themes ./tests/tmp ./application/config
           sudo chown -R www-data:docker ./tmp
-          chmod -R 777 ./upload
-          chmod -R 777 ./themes  # Need 777 so both console and web server can cd into the folder.
-          chmod -R 777 ./tests/tmp
-          chmod -R 777 ./application/config
-          chmod +x ./tests/bin/lint-*
           chmod 777 /home/runner
 
-      - name: Check MySQL service
-        run: |
-          # InnoDB needs large_file_prefix & Barracuda file format
-          # https://discuss.gogs.io/t/solved-mysql-error-1064-while-running-first-install/1604
-          # InnoDB variables ARE already set to desired values in Github runner (ubuntu-18.04)
-          sudo systemctl start mysql
-          sudo service mysql status
-          mysql -uroot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';" 2>/dev/null || \
-          mysql -uroot -proot -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';" || true
-          mysql -uroot -proot -e "Show  variables like '%large%';"
-          mysql -uroot -proot -e "Show  variables like '%innodb_file%';"
-          mysql -uroot -proot -e "Show  variables like '%innodb_default%';"
-          mysql -uroot -proot -e "CREATE DATABASE limesurvey;"
-
-      - name: Load custom console and start the Application
+      - name: Install and configure LimeSurvey
         working-directory: limesurvey
         run: |
           cp application/config/config-sample-mysql.php application/config/config.php
           php application/commands/console.php install admin password TravisLS no@email.com verbose
-          # Do NOT set debug=2 here.
-          # InstallationControllerTest rewrites config.php with debug=0 and PHPUnit's YII_DEBUG constant (set at bootstrap) is immutable.
-          # This causes PHPUnit to use CDummyCache while Apache uses CFileCache, so cache->flush()
-          # becomes a no-op and Apache serves stale schema entries that breaks subsequent functional tests.
-          # sed -i '60s/.*/        "debug"=>2,/' application/config/config.php
-          #
-          # disable new editor for functional tests CI
-          sed -i '67i\        "RPCInterface" => "json",' application/config/config.php
-          cat application/config/config.php
+          # Test-environment settings, inserted at the top of the 'config' array:
+          #  - RPCInterface=json enables the RemoteControl API that the fixtures seed data through.
+          #  - The loopback allowlists stop the invalid-login/invalid-token tests from locking
+          #    out the runner's IP (3 failed attempts = 10 min lockout by default).
+          # The pattern tolerates any spacing and both array syntaxes: the MySQL sample writes
+          # `'config' => array(`, the PostgreSQL sample `'config'=>array(`, newer code may use `[`.
+          sed -i "s/'config'[[:space:]]*=>[[:space:]]*\(array(\|\[\)/&\n        'RPCInterface' => 'json',\n        'loginIpWhitelist' => '127.0.0.1,::1',\n        'tokenIpWhitelist' => '127.0.0.1,::1',/" application/config/config.php
+          php -l application/config/config.php
+          # sed exits 0 even when nothing matched, so fail here rather than later in the fixtures.
+          grep -q "'RPCInterface' => 'json'" application/config/config.php
 
-      - name: Test the server
+      # ── Legacy DB snapshot (scripts/db/ls-ce.sql): DISABLED ─────────────────────────────────
+      # The per-test API fixtures don't depend on it. Disabled because it fails every job: the
+      # dump (exported 2026-08-17) has INSERTs without column lists, and since then LimeSurvey
+      # added columns to lime_surveys, lime_surveys_groupsettings and lime_users. The load stops
+      # with "ERROR 1136: Column count doesn't match value count".
+      #
+      # Re-exporting the dump for the current schema (keeps its data):
+      #  1. Install the LimeSurvey version the dump was exported from into an empty MySQL database
+      #     with table prefix `lime_` (the config-sample-mysql.php default). That version was not
+      #     recorded; try the last LimeSurvey master commit before 2026-08-18:
+      #       php application/commands/console.php install admin password TravisLS no@email.com
+      #  2. Load the dump with the two commands of the step below (truncate, then mysql < ls-ce.sql).
+      #     It must load without errors, otherwise try a commit closer to the dump date.
+      #  3. Switch that installation's code to the LimeSurvey version CI tests (`limesurvey_ref`,
+      #     default master; its DB version is `dbversionnumber` in application/config/version.php)
+      #     and migrate the data:
+      #       php application/commands/console.php updatedb
+      #  4. Export:  scripts/db/export_data.sh <db_name> scripts/db/ls-ce.sql
+      #     The script expects the ls-dev-mysql Docker container with root/root. It leaves out
+      #     lime_settings_global, which must not be in the dump. Recommended: add --complete-insert
+      #     to its data export (step 2 in the script) so the INSERTs name their columns and a
+      #     column LimeSurvey adds later no longer breaks the load.
+      #     The admin password must stay `password` (LS_ADMIN_PASSWORD below).
+      #  5. Load the new dump into a fresh install of the target version as this job does, run the
+      #     tests, then uncomment the step. Record the LimeSurvey commit and DB version you exported
+      #     from (e.g. in the commit message): it is the starting point of the next re-export, which
+      #     is needed whenever LimeSurvey changes the schema.
+      #
+      # - name: Seed data
+      #   working-directory: limesurvey-automated-testing
+      #   run: |
+      #     # truncate all tables except lime_settings_global to prevent need for upgrading database
+      #     mysql -Nse 'show tables' limesurvey | while read table; do if [ $table != "lime_settings_global" ]; then mysql -e "truncate table $table" limesurvey; fi; done
+      #     # seed data (shouldn't contain lime_settings_global)
+      #     mysql limesurvey < scripts/db/ls-ce.sql
+
+      - name: Check the server and the RemoteControl API respond
         run: |
-          # Test server.
-          wget -O - localhost
-          #sudo tail -n 500 /var/log/apache2/error.log || true
-          #sudo tail -n 500 /var/log/nginx/error.log || true
-          #sudo tail -n 500 /var/log/php8.1-fpm.log || true
-          #sudo tail -n 500 /var/log/php8.3-fpm.log || true
-          # NOTE: php --version might not be the same as setup in apache. Use fwrite(STDERR, phpversion()); in index.php to be sure.
-          #which php
-          #php --version
-          #php -r 'phpinfo();' | grep log
-          #php --info | grep log
-          #find /var/log
+          curl --fail --silent --show-error --output /dev/null http://localhost/index.php/admin/authentication/sa/login
+          # End-to-end check of the settings above: a JSON session key means RPCInterface=json is active.
+          curl --fail --silent --show-error -X POST -H 'Content-Type: application/json' \
+            -d '{"method":"get_session_key","params":["admin","password"],"id":1}' \
+            http://localhost/index.php/admin/remotecontrol | grep -q '"result":"'
 
-      - name: Seed data
-        working-directory: limesurvey-automated-testing
-        run: |
-          # truncate all tables except lime_settings_global to prevent need for upgrading database
-          mysql -Nse 'show tables' limesurvey | while read table; do if [ $table != "lime_settings_global" ]; then mysql -e "truncate table $table" limesurvey; fi; done
-          # seed data (shouldn't contain lime_settings_global)
-          mysql limesurvey < tests/data/ls-ce.sql
-
-      - name: Install Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
           cache-dependency-path: limesurvey-automated-testing/package-lock.json
 
-      - name: Install Playwright and dependencies
+      - name: Install test dependencies and browsers
         working-directory: limesurvey-automated-testing
         run: |
           npm ci
           npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
+      - name: Run Playwright tests (${{ matrix.project }})
         working-directory: limesurvey-automated-testing
         env:
-          BASE_URL: 'http://localhost/index.php'
-          TEST_USER: admin
-          TEST_PASSWORD: password
           CI: 'true'
-        run: npx playwright test --project=${{ matrix.testsuite }} --reporter=html --output=playwright-report --workers=1
+          BASE_URL: http://localhost/index.php
+          LS_ADMIN_USER: admin
+          LS_ADMIN_PASSWORD: password
+        run: npx playwright test --project=${{ matrix.project }}
 
-      - name: Upload Playwright report
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: playwright-${{ matrix.testsuite }}-report
+          name: playwright-report-${{ matrix.project }}
           path: limesurvey-automated-testing/playwright-report/
           retention-days: 14
+
+      - name: Upload traces, screenshots and JUnit results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.project }}
+          path: limesurvey-automated-testing/test-results/
+          retention-days: 14
+
+      - name: Apache error log (on failure)
+        if: failure()
+        run: sudo tail -n 200 /var/log/apache2/error.log || true
