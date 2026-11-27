@@ -131,7 +131,7 @@ src/
 tests/
   auth.setup.js
   smoke/  admin/  respondent/
-scripts/db/     legacy DB snapshot tooling (not used by the tests)
+scripts/db/     legacy DB snapshot tooling; its CI seed step is disabled (the tests don't depend on it)
 ```
 
 ### Writing a test
@@ -166,6 +166,10 @@ Before committing run `npm run check` (ESLint + Prettier). ESLint enforces the P
 2. **test** (matrix per project): installs LimeSurvey (`limesurvey_ref` input, default `master`) with
    Apache/PHP/MySQL, enables the JSON-RPC API and the loopback allowlists, then runs
    `npx playwright test --project=<project>`. The HTML report, traces and JUnit XML are uploaded as artifacts.
+
+The step that loads the legacy DB snapshot ([scripts/db/ls-ce.sql](scripts/db/ls-ce.sql)) is commented out:
+the dump no longer matches the current LimeSurvey schema. How to re-export it is described above that
+step in the workflow.
 
 Pull-request runs cancel their superseded run; push, dispatch and called runs are never cancelled.
 

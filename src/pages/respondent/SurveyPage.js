@@ -18,8 +18,10 @@ export class SurveyPage {
     this.welcomeContainer = page.locator('#welcome-container');
     this.surveyTitle = this.welcomeContainer.getByRole('heading', { level: 1 });
 
-    // Navigator (subviews/navigation/navigator.twig). Next and Submit share the id
-    // `ls-button-submit`, but their accessible names differ.
+    // Navigator (subviews/navigation/navigator_next_submit_button.twig). Start, Next and Submit
+    // share the id `ls-button-submit`, but their accessible names differ. Since 7.12 the
+    // welcome screen shows the "move next" button as "Start survey".
+    this.startButton = page.getByRole('button', { name: 'Start survey', exact: true });
     this.nextButton = page.getByRole('button', { name: 'Next page', exact: true });
     this.submitButton = page.getByRole('button', { name: 'Submit', exact: true });
 
@@ -107,7 +109,7 @@ export class SurveyPage {
 
   /** Leaves the welcome page. */
   async start() {
-    return this.#navigate(this.nextButton);
+    return this.#navigate(this.startButton);
   }
 
   async next() {

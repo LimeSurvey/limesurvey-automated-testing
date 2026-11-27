@@ -24,7 +24,7 @@ test.describe('Smoke', { tag: '@smoke' }, () => {
         await surveyPage.goto(activeSurvey.id);
 
         await expect(surveyPage.welcomeContainer).toContainText(BASIC_SURVEY.welcomeText);
-        await expect(surveyPage.nextButton).toBeVisible();
+        await expect(surveyPage.startButton).toBeVisible();
       },
     );
   });

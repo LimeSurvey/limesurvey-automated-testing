@@ -2,19 +2,20 @@ import { routes } from '../utils/routes.js';
 
 /**
  * Admin top navigation bar (application/views/layouts/adminmenu.php).
+ * Since LimeSurvey 7.12 the bar is a <header> with two named navigation landmarks.
  */
 export class AdminNavbar {
   /** @param {import('@playwright/test').Page} page */
   constructor(page) {
     this.page = page;
-    // The main <nav> has no accessible name; `navbar` is its only stable hook.
-    this.root = page.locator('nav.navbar');
+    this.mainMenu = page.getByRole('navigation', { name: 'Main menu' });
+    this.userMenu = page.getByRole('navigation', { name: 'User menu' });
 
     // "Create survey" dropdown (LayoutHelper.php, rendered by MenuObjects/_extraMenu.php)
-    this.createMenuButton = this.root.getByRole('button', { name: 'Create survey' });
+    this.createMenuButton = this.mainMenu.getByRole('button', { name: 'Create survey' });
     this.createSurveyLink = page.locator('#create-survey-link');
-    this.copySurveyMenuItem = this.root.getByRole('button', { name: 'Copy' });
-    this.importSurveyMenuItem = this.root.getByRole('button', { name: 'Import' });
+    this.copySurveyMenuItem = this.mainMenu.getByRole('button', { name: 'Copy' });
+    this.importSurveyMenuItem = this.mainMenu.getByRole('button', { name: 'Import' });
     // Dialogs opened from the create menu (surveyAdministration/partial/_modalCopySurvey.php, _modalImportSurvey.php)
     this.copySurveyDialog = page.getByRole('dialog', { name: 'Copy survey' });
     // Select2 "Source survey" picker; copySurvey.js opens it when the dialog is shown empty.
@@ -25,19 +26,16 @@ export class AdminNavbar {
     this.importSurveyDialog = page.locator('#importSurvey_modal');
 
     // "Configuration" mega-menu (views/admin/super/_configuration_menu.php)
-    this.configurationMenuToggle = this.root.getByRole('link', { name: 'Configuration' });
+    this.configurationMenuToggle = this.mainMenu.getByRole('link', { name: 'Configuration' });
     this.configurationMenu = page.locator('#mainmenu-dropdown');
 
     // Only rendered when the user has at least one notification.
     this.notificationsButton = page.locator('#admin-notifications-menu-button');
     this.clearAllNotificationsItem = page.locator('#notification-clear-all');
 
-    // The user dropdown is the list item that holds the "Account" entry; its toggle is
-    // named after the user (e.g. "A admin"), so locate it structurally instead.
-    this.userMenuToggle = this.root
-      .getByRole('listitem')
-      .filter({ has: page.locator('#admin-menu-item-account') })
-      .getByRole('button');
+    // The toggle's accessible name is the user's initial and name (e.g. "A admin"), which
+    // depends on who is logged in, so use its stable id instead.
+    this.userMenuToggle = this.userMenu.locator('#admin-menu-user-button');
     this.logoutLink = page.getByRole('link', { name: 'Logout', exact: true });
 
     // "Editor version" entry, injected by EditorService when the React editor is available.

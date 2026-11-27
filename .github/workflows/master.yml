@@ -133,6 +133,42 @@ jobs:
           # sed exits 0 even when nothing matched, so fail here rather than later in the fixtures.
           grep -q "'RPCInterface' => 'json'" application/config/config.php
 
+      # ── Legacy DB snapshot (scripts/db/ls-ce.sql): DISABLED ─────────────────────────────────
+      # The per-test API fixtures don't depend on it. Disabled because it fails every job: the
+      # dump (exported 2026-08-17) has INSERTs without column lists, and since then LimeSurvey
+      # added columns to lime_surveys, lime_surveys_groupsettings and lime_users. The load stops
+      # with "ERROR 1136: Column count doesn't match value count".
+      #
+      # Re-exporting the dump for the current schema (keeps its data):
+      #  1. Install the LimeSurvey version the dump was exported from into an empty MySQL database
+      #     with table prefix `lime_` (the config-sample-mysql.php default). That version was not
+      #     recorded; try the last LimeSurvey master commit before 2026-08-18:
+      #       php application/commands/console.php install admin password TravisLS no@email.com
+      #  2. Load the dump with the two commands of the step below (truncate, then mysql < ls-ce.sql).
+      #     It must load without errors, otherwise try a commit closer to the dump date.
+      #  3. Switch that installation's code to the LimeSurvey version CI tests (`limesurvey_ref`,
+      #     default master; its DB version is `dbversionnumber` in application/config/version.php)
+      #     and migrate the data:
+      #       php application/commands/console.php updatedb
+      #  4. Export:  scripts/db/export_data.sh <db_name> scripts/db/ls-ce.sql
+      #     The script expects the ls-dev-mysql Docker container with root/root. It leaves out
+      #     lime_settings_global, which must not be in the dump. Recommended: add --complete-insert
+      #     to its data export (step 2 in the script) so the INSERTs name their columns and a
+      #     column LimeSurvey adds later no longer breaks the load.
+      #     The admin password must stay `password` (LS_ADMIN_PASSWORD below).
+      #  5. Load the new dump into a fresh install of the target version as this job does, run the
+      #     tests, then uncomment the step. Record the LimeSurvey commit and DB version you exported
+      #     from (e.g. in the commit message): it is the starting point of the next re-export, which
+      #     is needed whenever LimeSurvey changes the schema.
+      #
+      # - name: Seed data
+      #   working-directory: limesurvey-automated-testing
+      #   run: |
+      #     # truncate all tables except lime_settings_global to prevent need for upgrading database
+      #     mysql -Nse 'show tables' limesurvey | while read table; do if [ $table != "lime_settings_global" ]; then mysql -e "truncate table $table" limesurvey; fi; done
+      #     # seed data (shouldn't contain lime_settings_global)
+      #     mysql limesurvey < scripts/db/ls-ce.sql
+
       - name: Check the server and the RemoteControl API respond
         run: |
           curl --fail --silent --show-error --output /dev/null http://localhost/index.php/admin/authentication/sa/login
